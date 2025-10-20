@@ -19,7 +19,7 @@
   <a href="https://huggingface.co/REPA-E">🤗 Models</a> &ensp;
   <a href="https://arxiv.org/abs/2504.10483">📃 Paper</a> &ensp;
   <br><br>
-  <a href="https://paperswithcode.com/sota/image-generation-on-imagenet-256x256?p=repa-e-unlocking-vae-for-end-to-end-tuning-of"><img src="https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/repa-e-unlocking-vae-for-end-to-end-tuning-of/image-generation-on-imagenet-256x256" alt="PWC"></a>
+  <!-- <a href="https://paperswithcode.com/sota/image-generation-on-imagenet-256x256?p=repa-e-unlocking-vae-for-end-to-end-tuning-of"><img src="https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/repa-e-unlocking-vae-for-end-to-end-tuning-of/image-generation-on-imagenet-256x256" alt="PWC"></a> -->
 </p>
 
 ![](assets/vis-examples.jpg)
@@ -29,9 +29,11 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 
 ![](assets/overview.jpg)
 
-**REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.26** with CFG and **1.83** without CFG.
+**REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.26** with CFG and **1.70** without CFG.
 
 ## News and Updates
+**[2025-10-21]** 
+**[2025-06-26]** REPA-E has been accepted by ICCV 2025! 
 **[2025-04-15]** Initial Release with pre-trained models and codebase.
 
 ## Getting Started
@@ -239,7 +241,7 @@ Tables below report generation performance using gFID on 50k samples, with and w
 | SD-VAE | SiT-XL/2 | SiT | 1400 | 8.30 | 2.06 |
 | SD-VAE | SiT-XL/2 | REPA | 800 | 5.90 | 1.42 |
 | VA-VAE | LightningDiT-XL/1 | LightningDiT | 800 | 2.17 | 1.36 |
-| [**E2E-VAVAE (Ours)**](https://huggingface.co/REPA-E/e2e-vavae) | [**SiT-XL/1**](https://huggingface.co/REPA-E/sit-ldm-e2e-vavae) | REPA | 800 | **1.83** | **1.26**<sup>†</sup> |
+| [**E2E-VAVAE (Ours)**](https://huggingface.co/REPA-E/e2e-vavae) | [**SiT-XL/1**](https://huggingface.co/REPA-E/sit-ldm-e2e-vavae) | REPA | 800 | **1.70** | **1.26**<sup>†</sup> |
 
 In this setup, the VAE is kept frozen, and only the generator is trained. Models using our E2E-VAE (fine-tuned via REPA-E) consistently outperform baselines like SD-VAE and VA-VAE, achieving state-of-the-art performance when incorporating the REPA alignment objective.
 
