@@ -61,7 +61,7 @@ def main(args):
     dist.init_process_group("nccl")
     rank = dist.get_rank()
     device = rank % torch.cuda.device_count()
-    seed = (args.global_seed + rank) * dist.get_world_size()//2
+    seed = args.global_seed * dist.get_world_size() + rank
     torch.manual_seed(seed)
     torch.cuda.set_device(device)
     print(f"Starting rank={rank}, seed={seed}, world_size={dist.get_world_size()}.")
@@ -141,7 +141,8 @@ def main(args):
 
     assert args.cfg_scale >= 1.0, "cfg_scale should be >= 1.0"
 
-    sample_folder_dir = f"{args.sample_dir}/{exp_name}_{train_step_str}_cfg{args.cfg_scale}-{args.guidance_low}-{args.guidance_high}"
+    sample_folder_dir = (f"{args.sample_dir}/{exp_name}_{train_step_str}_cfg{args.cfg_scale}"
+                        f"-{args.guidance_low}-{args.guidance_high}-perclass{args.per_class_sampling}")
     skip = torch.tensor([False], device=device)
     if rank == 0:
         if os.path.exists(f"{sample_folder_dir}.npz"):
@@ -160,24 +161,54 @@ def main(args):
 
     # Figure out how many samples we need to generate on each GPU and how many iterations we need to run:
     n = args.pproc_batch_size
-    global_batch_size = n * dist.get_world_size()
-    # To make things evenly-divisible, we'll sample a bit more than we need and then discard the extra samples:
-    total_samples = int(math.ceil(args.num_fid_samples / global_batch_size) * global_batch_size)
+    world_size = dist.get_world_size()
+
+    # Exact class balance: 50_000 images, 1_000 classes => 50 per class
+    assert args.num_fid_samples % args.num_classes == 0, \
+        f"num_fid_samples ({args.num_fid_samples}) must be divisible by num_classes ({args.num_classes})."
+    per_class = args.num_fid_samples // args.num_classes  # 50 when 50k/1k
+
+    # Build a global label schedule with exact counts, then (optionally) shuffle it.
+    # IMPORTANT: all ranks must see the same permutation => use a rank-independent seed or broadcast.
     if rank == 0:
-        print(f"Total number of images that will be sampled: {total_samples}")
-        print(f"SiT Parameters: {sum(p.numel() for p in model.parameters()):,}")
-        print(f"projector Parameters: {sum(p.numel() for p in model.projectors.parameters()):,}")
-    assert total_samples % dist.get_world_size() == 0, "total_samples must be divisible by world_size"
-    samples_needed_this_gpu = int(total_samples // dist.get_world_size())
-    assert samples_needed_this_gpu % n == 0, "samples_needed_this_gpu must be divisible by the per-GPU batch size"
-    iterations = int(samples_needed_this_gpu // n)
+        if args.per_class_sampling:
+            y_all = torch.arange(args.num_classes, device=device).repeat_interleave(per_class)  # [0..999] each repeated 50x
+            gen = torch.Generator(device=device).manual_seed(args.global_seed)  # SAME seed across ranks
+            y_all = y_all[torch.randperm(y_all.numel(), generator=gen, device=device)]
+        else:
+            y_all = torch.randint(0, args.num_classes, (args.num_fid_samples,), device=device)
+    else:
+        y_all = torch.empty(args.num_fid_samples, device=device, dtype=torch.long)
+
+    # Broadcast the global label schedule to all ranks
+    dist.broadcast(y_all, src=0)
+
+    # Equal shard per rank
+    labels_per_rank = args.num_fid_samples // world_size   # 12_500 (4 GPUs) or 6_250 (8 GPUs)
+    assert args.num_fid_samples % world_size == 0, \
+        f"num_fid_samples ({args.num_fid_samples}) must be divisible by world_size ({world_size})."
+    start = rank * labels_per_rank
+    end = start + labels_per_rank
+    y_this_rank = y_all[start:end]                         # shape: (labels_per_rank,)
+
+    # Iteration planning with possible partial last batch (no need to force divisibility by n)
+    total_to_make = y_this_rank.numel()                    # exactly 12,500 or 6,250
+    iterations = int(math.ceil(total_to_make / n))
     pbar = range(iterations)
     pbar = tqdm(pbar) if rank == 0 else pbar
-    total = 0
+
+    if rank == 0:
+        print(f"Generating exactly {args.num_fid_samples} images across {world_size} GPUs.")
+        print(f"Per GPU: {labels_per_rank} images. Classes globally: {args.num_classes} with {per_class} per class.")
+
+    offset = 0  # offset within this rank's shard
+
     for _ in pbar:
+        m = min(n, total_to_make - offset)  # batch size for this iteration (may be < n on the last step)
+
         # Sample inputs:
-        z = torch.randn(n, model.in_channels, latent_size, latent_size, device=device)
-        y = torch.randint(0, config.num_classes, (n,), device=device)
+        z = torch.randn(m, model.in_channels, latent_size, latent_size, device=device)
+        y = y_this_rank[offset : offset + m]
 
         assert not args.heun or args.mode == "ode", "Heun's method is only available for ODE sampling."
 
@@ -209,9 +240,9 @@ def main(args):
 
             # Save samples to disk as individual .png files
             for i, sample in enumerate(samples):
-                index = i * dist.get_world_size() + rank + total
+                index = start + offset + i
                 Image.fromarray(sample).save(f"{sample_folder_dir}/{index:06d}.png")
-        total += global_batch_size
+        offset += m
 
     # Make sure all processes have finished saving their samples before attempting to convert to .npz
     dist.barrier()
@@ -239,11 +270,12 @@ if __name__ == "__main__":
     parser.add_argument("--train-steps", type=str, default=None, help="The checkpoint of the model to sample from.")
 
     # number of samples
-    parser.add_argument("--pproc-batch-size", type=int, default=256)
+    parser.add_argument("--pproc-batch-size", type=int, default=128)
     parser.add_argument("--num-fid-samples", type=int, default=50_000)
 
     # sampling related hyperparameters
     parser.add_argument("--mode", type=str, default="ode")
+    parser.add_argument("--num-classes", type=int, default=1000)
     parser.add_argument("--cfg-scale",  type=float, default=1.5)
     parser.add_argument("--path-type", type=str, default="linear", choices=["linear", "cosine"])
     parser.add_argument("--num-steps", type=int, default=50)
@@ -251,6 +283,9 @@ if __name__ == "__main__":
                         help="Use Heun's method for ODE sampling.")
     parser.add_argument("--guidance-low", type=float, default=0.)
     parser.add_argument("--guidance-high", type=float, default=1.)
+
+    parser.add_argument("--per-class-sampling", action=argparse.BooleanOptionalAction, default=True,
+                        help="Whether to make sure number of images per class is balanced.")
 
     args = parser.parse_args()
     main(args)

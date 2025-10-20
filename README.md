@@ -29,12 +29,24 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 
 ![](assets/overview.jpg)
 
-**REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.26** with CFG and **1.70** without CFG.
+**REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.12** with CFG and **1.69** without CFG.
 
 ## News and Updates
-**[2025-10-21]** 
-**[2025-06-26]** REPA-E has been accepted by ICCV 2025! 
-**[2025-04-15]** Initial Release with pre-trained models and codebase.
+
+- **[2025-10-21]**
+  We also release [REPA-E for T2I]() — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
+  Models are available at [REPA-E HF Models](https://huggingface.co/REPA-E), including end-to-end fine-tuned FLUX-VAE, SD-3.5-VAE, and Qwen-Image-VAE.
+
+- **[2025-10-21]**  
+  Updated results: we re-evaluated our released models using a **class-balanced sampling protocol (50 images per class)**.  
+  Our method achieves FID scores on ImageNet 256×256 — **1.12** with CFG and **1.69** without CFG.  
+  For more details, please refer to the updated paper.
+
+- **[2025-06-26]**  
+  REPA-E has been accepted by ICCV 2025!  
+
+- **[2025-04-15]**  
+  Initial release with pre-trained models and codebase.
 
 ## Getting Started
 ### 1. Environment Setup
@@ -239,16 +251,18 @@ Tables below report generation performance using gFID on 50k samples, with and w
 | Tokenizer | Generation Model | Method | Epochs | gFID-50k ↓ | gFID-50k (CFG) ↓ |
 |:------|:---------|:----------------|:-----:|:----:|:---:|
 | SD-VAE | SiT-XL/2 | SiT | 1400 | 8.30 | 2.06 |
-| SD-VAE | SiT-XL/2 | REPA | 800 | 5.90 | 1.42 |
-| VA-VAE | LightningDiT-XL/1 | LightningDiT | 800 | 2.17 | 1.36 |
-| [**E2E-VAVAE (Ours)**](https://huggingface.co/REPA-E/e2e-vavae) | [**SiT-XL/1**](https://huggingface.co/REPA-E/sit-ldm-e2e-vavae) | REPA | 800 | **1.70** | **1.26**<sup>†</sup> |
+| SD-VAE | SiT-XL/2 | REPA | 800 | 5.84 | 1.28 |
+| VA-VAE | LightningDiT-XL/1 | LightningDiT | 800 | 2.05 | 1.25 |
+| [**E2E-VAVAE (Ours)**](https://huggingface.co/REPA-E/e2e-vavae) | [**SiT-XL/1**](https://huggingface.co/REPA-E/sit-ldm-e2e-vavae) | REPA | 800 | **1.69** | **1.12**<sup>†</sup> |
 
-In this setup, the VAE is kept frozen, and only the generator is trained. Models using our E2E-VAE (fine-tuned via REPA-E) consistently outperform baselines like SD-VAE and VA-VAE, achieving state-of-the-art performance when incorporating the REPA alignment objective.
+In this setup, the VAE is kept frozen and only the generator is trained. Models using our E2E-VAE (fine-tuned via REPA-E) consistently outperform baselines such as SD-VAE and VA-VAE, achieving state-of-the-art performance when incorporating the REPA alignment objective.
+
+**Note**: The results for the last three rows (REPA, LightningDiT, and E2E-VAE) are obtained using the class-balanced sampling protocol (50 images per class).
 
 <details>
     <summary>Click to expand for CFG parameters</summary>
 <ul>
-    <li><strong>†</strong>: <code>--cfg-scale=2.5</code>, <code>--guidance-low=0.0</code>, <code>--guidance-high=0.75</code></li>
+    <li><strong>†</strong>: <code>--cfg-scale=2.4</code>, <code>--guidance-low=0.0</code>, <code>--guidance-high=0.73</code></li>
 </ul>
 </details>
 
