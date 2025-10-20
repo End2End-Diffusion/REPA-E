@@ -34,8 +34,8 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 ## News and Updates
 
 - **[2025-10-21]**
-  We also release [REPA-E for T2I]() — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
-  Models are available at [REPA-E HF Models](https://huggingface.co/REPA-E), including end-to-end fine-tuned FLUX-VAE, SD-3.5-VAE, and Qwen-Image-VAE.
+  We also release [REPA-E for T2I](https://end2end-diffusion.github.io/repa-e-t2i/) — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
+  Models are available at [REPA-E HF Models](https://huggingface.co/REPA-E/models), including end-to-end fine-tuned FLUX-VAE, SD-3.5-VAE, and Qwen-Image-VAE.
 
 - **[2025-10-21]**  
   Updated results: we re-evaluated our released models using a **class-balanced sampling protocol (50 images per class)**.  
