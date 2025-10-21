@@ -31,7 +31,29 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 
 **REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.12** with CFG and **1.69** without CFG.
 
-## News and Updates
+## Updates
+<h3 align="left" style="color:#ff000d">🆕 AutoencoderKL-Compatible Release</h3>
+
+> **New in this release:** We are releasing the **REPA-E E2E-VAE** as a fully **Hugging Face AutoencoderKL** checkpoint — ready to use with `diffusers` out of the box.
+
+We previously released the REPA-E VAE checkpoint, which required loading through the model class in our REPA-E repository.  
+This new version provides a **Hugging Face–compatible AutoencoderKL** checkpoint that can be loaded directly via the `diffusers` API — no extra code or custom wrapper needed.  
+
+| Model | Link |
+|---|---|
+| E2E-SDVAE-HF | 🤗 [HF Model Page](https://huggingface.co/REPA-E/e2e-sdvae-hf) |
+| E2E-INVAE-HF | 🤗 [HF Model Page](https://huggingface.co/REPA-E/e2e-invae-hf) |
+| E2E-VAVAE-HF | 🤗 [HF Model Page](https://huggingface.co/REPA-E/e2e-vavae-hf) |
+
+#### ⚡️ Quickstart 
+```python
+from diffusers import AutoencoderKL
+
+vae = AutoencoderKL.from_pretrained("REPA-E/e2e-vavae-hf").to("cuda")
+```
+> Use `vae.encode(...)` / `vae.decode(...)` in your pipeline. (A full example is provided below.)
+
+## News
 
 - **[2025-10-21]**
   We also release [REPA-E for T2I](https://end2end-diffusion.github.io/repa-e-t2i/) — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
@@ -41,6 +63,9 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
   Updated results: we re-evaluated our released models using a **class-balanced sampling protocol (50 images per class)**.  
   Our method achieves FID scores on ImageNet 256×256 — **1.12** with CFG and **1.69** without CFG.  
   For more details, please refer to the updated paper.
+
+- **[2025-10-21]**  
+  AutoencoderKL-Compatible Release: We now provide **Hugging Face-compatible AutoencoderKL** checkpoints for REPA-E VAEs! Load directly with `diffusers` API - no custom wrapper needed. Available at [HF Models](https://huggingface.co/REPA-E/models).
 
 - **[2025-06-26]**  
   REPA-E has been accepted by ICCV 2025!  
