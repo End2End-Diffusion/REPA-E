@@ -31,6 +31,26 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 
 **REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.12** with CFG and **1.69** without CFG.
 
+## News
+
+- **[2025-10-21]**
+  We also release [REPA-E for T2I](https://end2end-diffusion.github.io/repa-e-t2i/) — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
+  Models are available at [REPA-E HF Models](https://huggingface.co/REPA-E/models), including end-to-end fine-tuned FLUX-VAE, SD-3.5-VAE, and Qwen-Image-VAE.
+
+- **[2025-10-21]**  
+  Updated results: we re-evaluated our released models using a **class-balanced sampling protocol (50 images per class)**.  
+  Our method achieves FID scores on ImageNet 256×256 — **1.12** with CFG and **1.69** without CFG.  
+  For more details, please refer to the updated paper.
+
+- **[2025-10-21]**  
+  AutoencoderKL-Compatible Release: We now provide **Hugging Face-compatible AutoencoderKL** checkpoints for REPA-E VAEs! Load directly with `diffusers` API - no custom wrapper needed. Available at [HF Models](https://huggingface.co/REPA-E/models).
+
+- **[2025-06-26]**  
+  REPA-E has been accepted by ICCV 2025!  
+
+- **[2025-04-15]**  
+  Initial release with pre-trained models and codebase.
+
 ## Updates
 <h3 align="left" style="color:#ff000d">🆕 AutoencoderKL-Compatible Release</h3>
 
@@ -53,25 +73,6 @@ vae = AutoencoderKL.from_pretrained("REPA-E/e2e-vavae-hf").to("cuda")
 ```
 > Use `vae.encode(...)` / `vae.decode(...)` in your pipeline. (A full example is provided below.)
 
-## News
-
-- **[2025-10-21]**
-  We also release [REPA-E for T2I](https://end2end-diffusion.github.io/repa-e-t2i/) — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
-  Models are available at [REPA-E HF Models](https://huggingface.co/REPA-E/models), including end-to-end fine-tuned FLUX-VAE, SD-3.5-VAE, and Qwen-Image-VAE.
-
-- **[2025-10-21]**  
-  Updated results: we re-evaluated our released models using a **class-balanced sampling protocol (50 images per class)**.  
-  Our method achieves FID scores on ImageNet 256×256 — **1.12** with CFG and **1.69** without CFG.  
-  For more details, please refer to the updated paper.
-
-- **[2025-10-21]**  
-  AutoencoderKL-Compatible Release: We now provide **Hugging Face-compatible AutoencoderKL** checkpoints for REPA-E VAEs! Load directly with `diffusers` API - no custom wrapper needed. Available at [HF Models](https://huggingface.co/REPA-E/models).
-
-- **[2025-06-26]**  
-  REPA-E has been accepted by ICCV 2025!  
-
-- **[2025-04-15]**  
-  Initial release with pre-trained models and codebase.
 
 ## Getting Started
 ### 1. Environment Setup
