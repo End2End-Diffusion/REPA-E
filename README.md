@@ -62,6 +62,8 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 
 We are excited to release the family of End-to-End tuned VAEs as Hugging Face AutoencoderKL compatible checkpoints, ready to use with diffusers out of the box. This release includes both our text-to-image VAEs and ImageNet-trained VAEs.
 
+> **Note:** Please refer to our [T2I codebase](https://github.com/End2End-Diffusion/fuse-dit) training codebase to reproduce the text-to-image experiments with end-to-end VAEs.
+
 | Model | Hugging Face |
 |---|---|
 | **E2E-FLUX-VAE** | 🤗 [REPA-E/e2e-flux-vae](https://huggingface.co/REPA-E/e2e-flux-vae) |
@@ -287,6 +289,7 @@ You can adjust the following options for sampling:
 - `--cfg-scale`: Guidance scale (float ≥ 1), setting it to 1 disables classifier-free guidance (CFG)
 - `--guidance-high`: Upper guidance interval (float in [0, 1])
 - `--guidance-low`: Lower guidance interval (float in [0, 1], must be < `--guidance-high`)
+- `--label-sampling`: Class label sampling strategy, `[equal, random]` (default: `equal`)
 - `--exp-path`: Path to the experiment directory
 - `--train-steps`: Training step of the checkpoint to evaluate
 
