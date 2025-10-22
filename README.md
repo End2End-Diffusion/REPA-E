@@ -31,27 +31,33 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 
 **REPA-E** significantly accelerates training — achieving over **17×** speedup compared to REPA and **45×** over the vanilla training recipe. Interestingly, end-to-end tuning also improves the VAE itself: the resulting **E2E-VAE** provides better latent structure and serves as a **drop-in replacement** for existing VAEs (e.g., SD-VAE), improving convergence and generation quality across diverse LDM architectures. Our method achieves state-of-the-art FID scores on ImageNet 256×256: **1.12** with CFG and **1.69** without CFG.
 
-## News
+<section id="news">
+    <h2>News</h2>
+    <div class="row">
+        <div> 📅 <b>[Oct 2025]</b> 🚨 Released <a href="https://end2end-diffusion.github.io/repa-e-t2i/">REPA-E for T2I</a> 🚨 — a family of End-to-End Tuned VAEs:
+            <ul style="margin-top: 8px; margin-bottom: 4px;">
+                <li><b>Family of end-to-end tuned VAEs</b>:
+                    <ul style="margin-top: 4px; margin-bottom: 4px;">
+                        <li>T2I VAEs: <a href="https://huggingface.co/REPA-E/e2e-flux-vae">FLUX-VAE</a>, <a href="https://huggingface.co/REPA-E/e2e-sd3.5-vae">SD-3.5-VAE</a>, <a href="https://huggingface.co/REPA-E/e2e-qwenimage-vae">Qwen-Image-VAE</a></li>
+                        <li>ImageNet VAEs: <a href="https://huggingface.co/REPA-E/e2e-sdvae-hf">SD-VAE</a>, <a href="https://huggingface.co/REPA-E/e2e-invae-hf">IN-VAE</a>, <a href="https://huggingface.co/REPA-E/e2e-vavae-hf">VA-VAE</a></li>
+                    </ul>
+                </li>
+                <li><b>End-to-end training generalizes to T2I</b>: E2E-VAEs achieve better T2I generation quality across multiple resolutions (256×256, 512×512) compared to their standard VAE counterparts, without requiring additional representation alignment losses</li>
+                <li><b>SOTA results on ImageNet 256×256</b>: FID <b>1.12</b> with CFG and <b>1.69</b> without CFG</li>
+                <!-- <li><b>Improved latent space structure</b> with enhanced semantic spatial details compared to standard VAEs</li> -->
+                <li>All models available as <b>Hugging Face-compatible AutoencoderKL</b> checkpoints — load directly with <code>diffusers</code> API, no custom wrapper needed</li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div> 📅 <b>[Jun 2025]</b> REPA-E accepted at ICCV 2025!</div>
+    </div>
+    <div class="row">
+        <div> 📅 <b>[Apr 2025]</b> Paper, code, and pretrained models available on <a href="https://github.com/End2End-Diffusion/REPA-E">GitHub</a> and <a href="https://huggingface.co/REPA-E">Hugging Face</a>.</div>
+    </div>
+    </section>
 
-- **[2025-10-21]**
-  We also release [REPA-E for T2I](https://end2end-diffusion.github.io/repa-e-t2i/) — a family of End-to-End Tuned VAEs for supercharging text-to-image generation.
-  Models are available at [REPA-E HF Models](https://huggingface.co/REPA-E/models), including end-to-end fine-tuned FLUX-VAE, SD-3.5-VAE, and Qwen-Image-VAE.
-
-- **[2025-10-21]**  
-  Updated results: we re-evaluated our released models using a **class-balanced sampling protocol (50 images per class)**.  
-  Our method achieves FID scores on ImageNet 256×256 — **1.12** with CFG and **1.69** without CFG.  
-  For more details, please refer to the updated paper.
-
-- **[2025-10-21]**  
-  AutoencoderKL-Compatible Release: We now provide **Hugging Face-compatible AutoencoderKL** checkpoints for REPA-E VAEs! Load directly with `diffusers` API - no custom wrapper needed. Available at [HF Models](https://huggingface.co/REPA-E/models).
-
-- **[2025-06-26]**  
-  REPA-E has been accepted by ICCV 2025!  
-
-- **[2025-04-15]**  
-  Initial release with pre-trained models and codebase.
-
-## Updates
+<!-- ## Updates -->
 <h2 align="left" style="color:#ff000d">🆕 Model Releases: Hugging Face Compatible VAEs</h2>
 
 > We are excited to release REPA-E E2E-VAE models as fully Hugging Face AutoencoderKL checkpoints, ready to use with diffusers out of the box. This release includes both our ImageNet-trained VAEs and our new text-to-image VAEs, all optimized for seamless integration into existing pipelines.
