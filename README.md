@@ -276,7 +276,8 @@ torchrun --nnodes=1 --nproc_per_node=8 generate.py \
     --guidance-high 1.0 \
     --guidance-low 0.0 \
     --exp-path pretrained/sit-ldm-e2e-vavae \
-    --train-steps 4000000
+    --train-steps 4000000 \
+    --label-sampling equal
 ```
 
 <details>
@@ -289,9 +290,9 @@ You can adjust the following options for sampling:
 - `--cfg-scale`: Guidance scale (float ≥ 1), setting it to 1 disables classifier-free guidance (CFG)
 - `--guidance-high`: Upper guidance interval (float in [0, 1])
 - `--guidance-low`: Lower guidance interval (float in [0, 1], must be < `--guidance-high`)
-- `--label-sampling`: Class label sampling strategy, `[equal, random]` (default: `equal`)
 - `--exp-path`: Path to the experiment directory
 - `--train-steps`: Training step of the checkpoint to evaluate
+- `--label-sampling`: Class label sampling strategy, `[equal, random]` (default: `equal`)
 
 </details>
 
