@@ -60,27 +60,16 @@ We address a fundamental question: ***Can latent diffusion models and their VAE 
 <!-- ## Updates -->
 <h2 align="left" style="color:#ff000d">🆕 Model Releases: Hugging Face Compatible VAEs</h2>
 
-> We are excited to release REPA-E E2E-VAE models as fully Hugging Face AutoencoderKL checkpoints, ready to use with diffusers out of the box. This release includes both our ImageNet-trained VAEs and our new text-to-image VAEs, all optimized for seamless integration into existing pipelines.
+We are excited to release the family of End-to-End tuned VAEs as Hugging Face AutoencoderKL compatible checkpoints, ready to use with diffusers out of the box. This release includes both our text-to-image VAEs and ImageNet-trained VAEs.
 
-<h3 align="left">ImageNet VAEs (SD-VAE, IN-VAE, VA-VAE)</h3>
-
-Our ImageNet-trained VAEs (E2E-SD-VAE, E2E-IN-VAE, E2E-VA-VAE) are now available as Hugging Face-compatible **AutoencoderKL** checkpoints. Previously, these models required loading through custom classes in our REPA-E repository. This new release provides direct compatibility with the `diffusers` API — no extra code or custom wrapper needed.
-
-| Model | Link |
-|---|---|
-| **E2E-SDVAE-HF** | 🤗 [REPA-E/e2e-sdvae-hf](https://huggingface.co/REPA-E/e2e-sdvae-hf) |
-| **E2E-INVAE-HF** | 🤗 [REPA-E/e2e-invae-hf](https://huggingface.co/REPA-E/e2e-invae-hf) |
-| **E2E-VAVAE-HF** | 🤗 [REPA-E/e2e-vavae-hf](https://huggingface.co/REPA-E/e2e-vavae-hf) |
-
-<h3 align="left">Text-to-Image VAEs</h3>
-
-Building on the success of our ImageNet VAEs, we now release **REPA-E for T2I** — a family of end-to-end tuned VAEs specifically designed to supercharge text-to-image generation. These models consistently outperform standard VAEs across all T2I benchmarks (COCO-30K, DPG-Bench, GenAI-Bench, GenEval, MJHQ-30K), enable faster training convergence, without requiring additional representation alignment losses.
-
-| Model | Link |
+| Model | Hugging Face |
 |---|---|
 | **E2E-FLUX-VAE** | 🤗 [REPA-E/e2e-flux-vae](https://huggingface.co/REPA-E/e2e-flux-vae) |
 | **E2E-SD-3.5-VAE** | 🤗 [REPA-E/e2e-sd3.5-vae](https://huggingface.co/REPA-E/e2e-sd3.5-vae) |
 | **E2E-Qwen-Image-VAE** | 🤗 [REPA-E/e2e-qwenimage-vae](https://huggingface.co/REPA-E/e2e-qwenimage-vae) |
+| **E2E-VAVAE-HF** | 🤗 [REPA-E/e2e-vavae-hf](https://huggingface.co/REPA-E/e2e-vavae-hf) |
+| **E2E-SDVAE-HF** | 🤗 [REPA-E/e2e-sdvae-hf](https://huggingface.co/REPA-E/e2e-sdvae-hf) |
+| **E2E-INVAE-HF** | 🤗 [REPA-E/e2e-invae-hf](https://huggingface.co/REPA-E/e2e-invae-hf) |
 
 ### ⚡️ Quickstart 
 ```python
@@ -93,6 +82,40 @@ vae = AutoencoderKL.from_pretrained("REPA-E/e2e-vavae-hf").to("cuda")
 vae = AutoencoderKL.from_pretrained("REPA-E/e2e-flux-vae").to("cuda")
 
 # Use in your pipeline with vae.encode(...) / vae.decode(...)
+```
+
+### 🧩 Complete Example
+Full workflow for encoding and decoding images:
+```python
+from io import BytesIO
+import requests
+from diffusers import AutoencoderKLQwenImage
+import numpy as np
+import torch
+from PIL import Image
+
+response = requests.get("https://raw.githubusercontent.com/End2End-Diffusion/fuse-dit/main/assets/example.png")
+device = "cuda"
+
+image = torch.from_numpy(
+    np.array(
+        Image.open(BytesIO(response.content))
+    )
+).permute(2, 0, 1).unsqueeze(0).to(torch.float32) / 127.5 - 1
+image = image.to(device)
+
+vae = AutoencoderKLQwenImage.from_pretrained("REPA-E/e2e-qwenimage-vae").to(device)
+
+# Add frame dimension (required for QwenImage VAE)
+image_ = image.unsqueeze(2)
+
+with torch.no_grad():
+    latents = vae.encode(image_).latent_dist.sample()
+    reconstructed = vae.decode(latents).sample
+
+# Remove frame dimension
+latents = latents.squeeze(2)
+reconstructed = reconstructed.squeeze(2)
 ```
 
 ## Getting Started
