@@ -142,7 +142,7 @@ def main(args):
     assert args.cfg_scale >= 1.0, "cfg_scale should be >= 1.0"
 
     sample_folder_dir = (f"{args.sample_dir}/{exp_name}_{train_step_str}_cfg{args.cfg_scale}"
-                        f"-{args.guidance_low}-{args.guidance_high}-perclass{args.per_class_sampling}")
+                        f"-{args.guidance_low}-{args.guidance_high}-labelsampling-{args.label_sampling}")
     skip = torch.tensor([False], device=device)
     if rank == 0:
         if os.path.exists(f"{sample_folder_dir}.npz"):
@@ -171,12 +171,14 @@ def main(args):
     # Build a global label schedule with exact counts, then (optionally) shuffle it.
     # IMPORTANT: all ranks must see the same permutation => use a rank-independent seed or broadcast.
     if rank == 0:
-        if args.per_class_sampling:
+        if args.label_sampling == "equal":
             y_all = torch.arange(args.num_classes, device=device).repeat_interleave(per_class)  # [0..999] each repeated 50x
             gen = torch.Generator(device=device).manual_seed(args.global_seed)  # SAME seed across ranks
             y_all = y_all[torch.randperm(y_all.numel(), generator=gen, device=device)]
-        else:
+        elif args.label_sampling == "random":
             y_all = torch.randint(0, args.num_classes, (args.num_fid_samples,), device=device)
+        else:
+            raise NotImplementedError(f"Unknown label_sampling: {args.label_sampling}")
     else:
         y_all = torch.empty(args.num_fid_samples, device=device, dtype=torch.long)
 
@@ -284,8 +286,13 @@ if __name__ == "__main__":
     parser.add_argument("--guidance-low", type=float, default=0.)
     parser.add_argument("--guidance-high", type=float, default=1.)
 
-    parser.add_argument("--per-class-sampling", action=argparse.BooleanOptionalAction, default=True,
-                        help="Whether to make sure number of images per class is balanced.")
+    parser.add_argument(
+        "--label-sampling",
+        type=str,
+        choices=["random", "equal"],
+        default="equal",
+        help="Choose how to sample class labels when generating images.",
+    )
 
     args = parser.parse_args()
     main(args)
